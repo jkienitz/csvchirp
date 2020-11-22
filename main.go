@@ -32,13 +32,10 @@ func main() {
 
 	// Iterate through the records
 	for _, record := range InputCSVSliceMap {
-
 		outputRow := createOutputRow(record)
 		err = csvwriter.Write(outputRow)
 		checkError("Error writing the output csv file", err)
-
 	}
-
 }
 
 func createOutputRow(inputRow map[string]string) []string {
