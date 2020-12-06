@@ -10,6 +10,7 @@ import (
 )
 
 var fieldNames = []string{"Location", "Name", "Frequency", "Duplex", "Offset", "Tone", "rToneFreq", "cToneFreq", "DtcsCode", "DtcsPolarity", "Mode", "TStep", "Skip", "Comment", "URCALL", "RPT1CALL", "RPT2CALL"}
+
 var offsetDirection = map[string]string{"Minus": "-", "Plus": "+", "Simplex": "", "Split": ""}
 var offsetValues = map[string]string{"5.00 MHz": "5.00", "7.85 MHz": "7.85", "8.00 MHz": "8.00", "9.15 MHz": "9.15", "600 kHz": "0.600000", " ": ""}
 var toneValues = map[string]string{"Tone": "Tone", "None": ""}
@@ -40,25 +41,60 @@ func main() {
 
 func createOutputRow(inputRow map[string]string) []string {
 	var outputRow [17]string
+
+	isSplit := false
+	if inputRow["Offset Direction"] == "Split" {
+		isSplit = true
+	}
 	//fmt.Printf("Channel Number = %s \n", inputRow["Channel Number"])
 
+	// Location
 	outputRow[0] = inputRow["Channel Number"]
+	// Name
 	outputRow[1] = inputRow["Name"]
+	// Frequency
 	outputRow[2] = inputRow["Receive Frequency"]
-	outputRow[3] = offsetDirection[inputRow["Offset Direction"]]
-	outputRow[4] = offsetValues[inputRow["Offset Frequency"]]
+	// Duplex - if tx poweer is low, turn off transmitter
+	if inputRow["Tx Power"] == "Low" {
+		outputRow[3] = "off"
+	} else {
+		if isSplit {
+			outputRow[3] = "split"
+		} else {
+			outputRow[3] = offsetDirection[inputRow["Offset Direction"]]
+		}
+	}
+	// Offset
+	if isSplit {
+		outputRow[4] = inputRow["Transmit Frequency"]
+	} else {
+		outputRow[4] = offsetValues[inputRow["Offset Frequency"]]
+	}
+	// Tone
 	outputRow[5] = toneValues[inputRow["Tone Mode"]]
+	// rToneFreq
 	outputRow[6] = strings.Fields(inputRow["CTCSS"])[0]
+	// cToneFreq
 	outputRow[7] = "88.5"
+	// DtcsCode
 	outputRow[8] = inputRow["DCS"]
+	// DtcsPolarity
 	outputRow[9] = "NN"
+	// Mode
 	outputRow[10] = "FM"
+	// TStep
 	outputRow[11] = "5.00"
+	// Skip
 	outputRow[12] = skipValues[inputRow["Skip"]]
+	// Comment
 	outputRow[13] = inputRow["Comment"]
+	// URCALL
 	outputRow[14] = ""
+	// RPT1CALL
 	outputRow[15] = ""
+	// RPT2CALL
 	outputRow[16] = ""
+
 	return outputRow[:]
 }
 
