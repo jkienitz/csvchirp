@@ -1,5 +1,5 @@
-# output file
-chirp.csv
+# input files, output files and samples
+*.csv
 
-chirpgo.csv
+# go executable
 csvchirp
