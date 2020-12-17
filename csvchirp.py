@@ -17,11 +17,27 @@ with open('XCZFreqListv1_01.csv', newline='') as csvfile:
     writer = csv.DictWriter(csvoutput, fieldnames=fieldnames)
     writer.writeheader()
     for row in reader:
+
+      isSplit = False
+      if row['Offset Direction']  ==  'Split':
+        isSplit = True
+      
+      duplex = offsetdirection_values[row['Offset Direction']]
+      if row['Tx Power'] == 'Low':
+	      duplex = 'off'
+      elif isSplit:
+        duplex = 'split'
+
+      offset = offset_values[row['Offset Frequency']]
+      if isSplit:
+        offset = row['Transmit Frequency']
+
+
       outrow = {'Location': row['Channel Number'], 
         'Name': row['Name'], 
         'Frequency': row['Receive Frequency'], 
-        'Duplex': offsetdirection_values[row['Offset Direction']], 
-        'Offset': offset_values[row['Offset Frequency']], 
+        'Duplex': duplex, 
+        'Offset': offset, 
         'Tone': tone_values[row['Tone Mode']], 
         'rToneFreq': row['CTCSS'].split()[0], 
         'cToneFreq': '88.5',  # row[''],  # ???
