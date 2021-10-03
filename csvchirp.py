@@ -12,47 +12,52 @@ skip_values = {'Off': '', 'Skip': 'S', 'XXX': 'P'}
 counter = 0
 
 with open('XCZFreqListv1_01.csv', newline='') as csvfile:
-  reader = csv.DictReader(csvfile)
-  with open('chirp.csv', 'w', newline='') as csvoutput:
-    writer = csv.DictWriter(csvoutput, fieldnames=fieldnames)
-    writer.writeheader()
-    for row in reader:
+	reader = csv.DictReader(csvfile)
+	with open('chirp.csv', 'w', newline='') as csvoutput:
+		writer = csv.DictWriter(csvoutput, fieldnames=fieldnames)
+		writer.writeheader()
+		for row in reader:
 
-      isSplit = False
-      if row['Offset Direction']  ==  'Split':
-        isSplit = True
-      
-      duplex = offsetdirection_values[row['Offset Direction']]
-      if row['Tx Power'] == 'Low':
-	      duplex = 'off'
-      elif isSplit:
-        duplex = 'split'
+			isSplit = False
+			if row['Offset Direction']  ==  'Split':
+				isSplit = True
+			
+			frequency = float(row["Receive Frequency"])
+			isHam = False
+			if (frequency > 144.0 and frequency < 148.0) or (frequency > 420.0 and frequency < 450.0):
+				isHam = True
 
-      offset = offset_values[row['Offset Frequency']]
-      if isSplit:
-        offset = row['Transmit Frequency']
+			duplex = offsetdirection_values[row['Offset Direction']]
+			if isHam == False:
+				duplex = 'off'
+			elif isSplit:
+				duplex = 'split'
 
+			offset = offset_values[row['Offset Frequency']]
+			if isSplit:
+				offset = row['Transmit Frequency']
+			if isHam == False:
+				offset = ''
 
-      outrow = {'Location': row['Channel Number'], 
-        'Name': row['Name'], 
-        'Frequency': row['Receive Frequency'], 
-        'Duplex': duplex, 
-        'Offset': offset, 
-        'Tone': tone_values[row['Tone Mode']], 
-        'rToneFreq': row['CTCSS'].split()[0], 
-        'cToneFreq': '88.5',  # row[''],  # ???
-        'DtcsCode': row['DCS'], 
-        'DtcsPolarity': 'NN',  # row[''],   # ???
-        'Mode': 'FM',          # row[''], 
-        'TStep': '5.00',         # row[''], 
-        'Skip': skip_values[row['Skip']], 
-        'Comment': row['Comment'], 
-        'URCALL': '',       # row[''], 
-        'RPT1CALL': '',     # row[''], 
-        'RPT2CALL': ''     # row['']
-        }
-      writer.writerow(outrow)
-      counter += 1
+			outrow = {'Location': row['Channel Number'], 
+				'Name': row['Name'], 
+				'Frequency': row['Receive Frequency'], 
+				'Duplex': duplex, 
+				'Offset': offset, 
+				'Tone': tone_values[row['Tone Mode']], 
+				'rToneFreq': row['CTCSS'].split()[0], 
+				'cToneFreq': '88.5',  # row[''],  # ???
+				'DtcsCode': row['DCS'], 
+				'DtcsPolarity': 'NN',  # row[''],   # ???
+				'Mode': 'FM',          # row[''], 
+				'TStep': '5.00',         # row[''], 
+				'Skip': skip_values[row['Skip']], 
+				'Comment': row['Comment'], 
+				'URCALL': '',       # row[''], 
+				'RPT1CALL': '',     # row[''], 
+				'RPT2CALL': ''     # row['']
+				}
+			writer.writerow(outrow)
+			counter += 1
+
 print(counter)
-
-      
