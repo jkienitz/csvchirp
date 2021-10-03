@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -42,11 +43,19 @@ func main() {
 func createOutputRow(inputRow map[string]string) []string {
 	var outputRow [17]string
 
+	//fmt.Printf("Channel Number = %s \n", inputRow["Channel Number"])
+
+	frequency, err := strconv.ParseFloat(inputRow["Receive Frequency"], 8)
+	isHam := false
+	if (frequency > 144.0 && frequency < 148.0) || (frequency > 420.0 && frequency < 450.0) {
+		isHam = true
+	}
+	fmt.Println(frequency, err, isHam)
+
 	isSplit := false
 	if inputRow["Offset Direction"] == "Split" {
 		isSplit = true
 	}
-	//fmt.Printf("Channel Number = %s \n", inputRow["Channel Number"])
 
 	// Location
 	outputRow[0] = inputRow["Channel Number"]
@@ -54,8 +63,8 @@ func createOutputRow(inputRow map[string]string) []string {
 	outputRow[1] = inputRow["Name"]
 	// Frequency
 	outputRow[2] = inputRow["Receive Frequency"]
-	// Duplex - if tx poweer is low, turn off transmitter
-	if inputRow["Tx Power"] == "Low" {
+	// Duplex - if not ham frequency, turn off transmitter
+	if isHam == false {
 		outputRow[3] = "off"
 	} else {
 		if isSplit {
@@ -65,11 +74,16 @@ func createOutputRow(inputRow map[string]string) []string {
 		}
 	}
 	// Offset
-	if isSplit {
-		outputRow[4] = inputRow["Transmit Frequency"]
+	if isHam == false {
+		outputRow[4] = ""
 	} else {
-		outputRow[4] = offsetValues[inputRow["Offset Frequency"]]
-	}
+		if isSplit {
+			outputRow[4] = inputRow["Transmit Frequency"]
+		} else {
+			outputRow[4] = offsetValues[inputRow["Offset Frequency"]]
+		}
+	}	
+
 	// Tone
 	outputRow[5] = toneValues[inputRow["Tone Mode"]]
 	// rToneFreq
