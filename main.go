@@ -65,7 +65,7 @@ func createOutputRow(inputRow map[string]string) []string {
 	outputRow[2] = inputRow["Receive Frequency"]
 	// Duplex - if not ham frequency, turn off transmitter
 	if isHam == false {
-		outputRow[3] = "off"
+		outputRow[3] = "off"			// Documented as turning off transmit.  will not import on Kenwood
 	} else {
 		if isSplit {
 			outputRow[3] = "split"
@@ -75,7 +75,7 @@ func createOutputRow(inputRow map[string]string) []string {
 	}
 	// Offset
 	if isHam == false {
-		outputRow[4] = ""
+		outputRow[4] = "0.00000"
 	} else {
 		if isSplit {
 			outputRow[4] = inputRow["Transmit Frequency"]
