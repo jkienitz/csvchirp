@@ -7,4 +7,4 @@ The input to either of the programs is an RT Systems csv export file.  As of thi
 The ouput of these programs is a csv file that can be used as an import file to CHIRP.  I have attempted to create the same download file as the one available from repeaterbook, within the limits os the input data.
 
 John
-KN7MFL
+NS6K
