@@ -13,6 +13,7 @@ import (
 var ADMS13OutputKeyOrder = []string{"Channel Number", "Receive Frequency", "Transmit Frequency", "Offset Frequency", "Offset Direction", "Operating Mode", "TAG", "Name", "Tone Mode", "CTCSS Frequency", "DCS", "User CTCSS", "Tx Power", "Scan", "Step", "Narrow", "Clock Shift", "Comment", "Zero"}
 var ADMS13ToneValues = map[string]string{"Tone": "TONE", "": "OFF"}
 var ADMS13ScanValues = map[string]string{"": "YES", "S": "NO"}
+var ADMS13DummyRow = ",,,,,,,,,,,,,,,,,,0\n"
 
 // var offsetValues = map[string]string{"5.00 MHz": "5.00", "7.85 MHz": "7.85", "8.00 MHz": "8.00", "9.15 MHz": "9.15", "600 kHz": "0.600000", " ": ""}
 
@@ -37,10 +38,21 @@ func createADMS13OutputFile(inputMap []map[string]string) {
 	checkError("Couldn't create the output csv file", err)
 
 	// Iterate through the records
+	rowNumber := 1
 	for _, record := range inputMap {
+		thisRowNUmber, _ := strconv.Atoi(record["Location"])
+		for rowNumber < thisRowNUmber {
+			outputfile.WriteString(strconv.Itoa(rowNumber) + ADMS13DummyRow)
+			rowNumber++
+		}
+		rowNumber++
 		outputRow := createADMS13OutputRow(record)
 		_, err = outputfile.WriteString(outputRow)
 		checkError("Error writing the output csv file", err)
+	}
+	for rowNumber < 1000 {
+		outputfile.WriteString(strconv.Itoa(rowNumber) + ADMS13DummyRow)
+		rowNumber++
 	}
 }
 
@@ -70,28 +82,35 @@ func createADMS13OutputRow(inputMap map[string]string) string {
 		offsetDirection = "OFF"
 		offsetFrequency = "0.00000"
 		transmitFrequency = freq
+	case "off":
+		offsetDirection = "OFF"
+		offsetFrequency = "0.00000"
+		transmitFrequency = freq
 	case "split":
 		offsetDirection = "-/+"
 		offsetFrequency = "0.00000"
 		transmitFrequency = offsetvalue
 	}
+	if offsetFrequency == "0.600000" {
+		offsetFrequency = "0.60000"
+	}
 
 	outputMap["Channel Number"] = inputMap["Location"]
 	outputMap["Receive Frequency"] = inputMap["Frequency"]
-	outputMap["Transmit Frequency"] = fmt.Sprintf("%f", transmitFrequency)
+	outputMap["Transmit Frequency"] = fmt.Sprintf("%.5f", transmitFrequency)
 	outputMap["Offset Frequency"] = offsetFrequency
 	outputMap["Offset Direction"] = offsetDirection
 	outputMap["Operating Mode"] = inputMap["Mode"]
 	outputMap["TAG"] = "ON"
-	outputMap["Name"] = inputMap["Name"] // [:6]
+	outputMap["Name"] = "" // does not like it   inputMap["Name"] // [:6]
 	outputMap["Tone Mode"] = ADMS13ToneValues[inputMap["Tone"]]
 	outputMap["CTCSS Frequency"] = inputMap["rToneFreq"] + " Hz"
 	outputMap["DCS"] = inputMap["DtcsCode"]
-	outputMap["User CTCSS"] = "1500 Hz" // inputMap[""]
-	outputMap["Tx Power"] = "HIGH"				// inputMap["Tx Power"]
+	outputMap["User CTCSS"] = "1500 Hz" //
+	outputMap["Tx Power"] = "HIGH"      // "Tx Power"]
 	outputMap["Scan"] = ADMS13ScanValues[inputMap["Skip"]]
-	outputMap["Step"] = "OFF"   // inputMap[""]   ??
-	outputMap["Narrow"] = "OFF" // inputMap[""]   ?? narrow FM
+	outputMap["Step"] = "5.0KHz" //    ??
+	outputMap["Narrow"] = "OFF"  //   ?? narrow FM
 	outputMap["Clock Shift"] = "OFF"
 	outputMap["Comment"] = inputMap["Comment"]
 	outputMap["Zero"] = "0"
