@@ -2,4 +2,4 @@
 *.csv
 
 # go executable
-csvchirp
+csvconvert
